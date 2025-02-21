@@ -1,10 +1,12 @@
 #include "lexer.h"
+#include "parser.h"
 #include "vec.h"
 #include <stdio.h>
 #include <string.h>
 
 int main(void) {
-  const i8 *str = "let x = 2";
+  const i8 *str =
+      " let x = if 1 then 2 + 4 else 10 let yz = 5 123 + 2 * 3; 123";
   Lexeme *lexems = lex(str, strlen(str));
 
   if ((usize)lexems & 1) {
@@ -20,7 +22,31 @@ int main(void) {
     return 1;
   }
 
-  for (u64 i = 0; i < vec_len(lexems); i++) {
+  Stat *stats = parse(str, lexems);
+
+  for (u64 i = 0; i < vec_len(stats); i++) {
+    switch (stats[i].type) {
+    case LetStat:
+      printf("Let(%.*s,\n  ",
+             (int)(stats[i].let.name.right - stats[i].let.name.left),
+             str + stats[i].let.name.left);
+      print_expr(stats[i].let.expr);
+      printf(")\n");
+      break;
+    case TopExprStat:
+      print_expr(stats[i].top.expr);
+      puts("");
+      break;
+    }
+  }
+
+  // stats need special care due to inner allocs
+  vec_delete(lexems);
+  return 0;
+}
+
+void print_lexems(const Lexeme *lexems) {
+  for (u64 i = 0; i < vec_len((const Vec)lexems); i++) {
     switch (lexems[i].type) {
     case DirvTok:
     case IdTok:
@@ -41,7 +67,4 @@ int main(void) {
       puts(get_lex_str(lexems[i].type));
     }
   }
-
-  vec_delete(lexems);
-  return 0;
 }

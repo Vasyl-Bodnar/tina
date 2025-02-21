@@ -1,8 +1,6 @@
 #include "lexer.h"
 #include "vec.h"
 #include <ctype.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 const i8 *get_err_str(const enum lex err) {
@@ -385,6 +383,12 @@ void all(Lexer *lexer) {
       break;
     case '.':
       ch(lexer, DotTok);
+      break;
+    case ';':
+      ch(lexer, SemiColonTok);
+      break;
+    case ':':
+      ch(lexer, ColonTok);
       break;
     case '=':
       ch(lexer, EqTok);

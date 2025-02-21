@@ -9,12 +9,14 @@ enum texpr {
   FloatExpr,
   CharExpr,
   StrExpr,
+  BoolExpr,
   IdExpr,
   AddExpr,
   SubExpr,
   MultExpr,
   DivExpr,
   IfExpr,
+  NoExpr,
   // ApplyExpr,
   // BlockExpr,
   // LineExpr,
@@ -36,7 +38,7 @@ typedef struct bin_op {
 typedef struct expr {
   union {
     RefStr str;
-    BinaryOp *bin_op;
+    BinaryOp bin_op;
     struct expr *exprs;
     i8 ch;
     u64 num;
@@ -45,15 +47,19 @@ typedef struct expr {
   enum texpr type;
 } Expr;
 
+typedef struct let_s {
+  RefStr name;
+  Expr expr;
+} LetS;
+
+typedef struct top_s {
+  Expr expr;
+} TopS;
+
 typedef struct stat {
   union {
-    struct {
-      RefStr name;
-      Expr expr;
-    } let;
-    struct {
-      Expr expr;
-    } top;
+    LetS let;
+    TopS top;
   };
   enum tstat type;
 } Stat;
@@ -65,6 +71,7 @@ typedef struct parser {
   Stat *ast;
 } Parser;
 
+void print_expr(Expr expr);
 Stat *parse(const i8 *input, const Lexeme *lexems);
 
 #endif // PARSER_H
