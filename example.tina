@@ -1,0 +1,67 @@
+// Ambitious example file
+#RC
+
+enum Option { 
+    Some(x)
+    None 
+}
+
+trait H {
+    type result
+    sig dream u32 -> result
+}
+
+trait V {
+    sig qwerty -> u32 u32 u32, 1/(V H)
+
+    fun qwert -> u32 u32 u32 {
+        pru32 2 3
+        4, 4, 5
+    }
+}
+
+mod Omega : V {
+    // Or Genl(u32, u32) for types // Could also be Genl(u32, 1)
+    mod Genl(2) : V H {
+        type result = u32
+
+        fun dream x {
+            x + 32
+        }
+
+        fun unpack Genl(x, y:u32) {
+            x, y
+        }
+
+        fun qwerty {
+            qwert + qwert, Genl(1, 2)
+        }
+    }
+
+    fun qwerty {
+        qwert + qwert, Genl(1, 2)
+    }
+}
+
+// type inference and "generic" type
+pub fun zeus x y {
+    x + y, y - 2
+}
+
+zeus (zeus x y)
+
+Omega:Genl:unpack Omega:Genl(2, 2) + Omega:Genl (3, 3)
+
+[1 2 3] // slice
+@[1 2 3] // vec
+"str" // string slice
+@"str" // mut string
+'c' 'space' // chars
+2.5 // float
+
+let f1 = \x y. x + y // Normal // f1 x -> err
+let f2 = \x.y. x + y // Partial // f2 x -> \y.
+
+let ptr = malloc 50 // hehe
+defer free ptr
+ptr + 5
