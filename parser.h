@@ -17,17 +17,20 @@ enum texpr {
   DivExpr,
   IfExpr,
   NoExpr,
+  LineExpr,
+  LineIdExpr,
   // ApplyExpr,
   // BlockExpr,
-  // LineExpr,
 };
 
 enum tstat {
+  TypeStat,
+  TypeLineStat,
   LetStat,
+  LetLineStat,
   TopExprStat,
   // FunStat,
   // EnumStat,
-  // TypeStat,
 };
 
 typedef struct bin_op {
@@ -60,6 +63,7 @@ typedef struct stat {
   union {
     LetS let;
     TopS top;
+    Expr *any;
   };
   enum tstat type;
 } Stat;

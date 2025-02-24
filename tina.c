@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <string.h>
 
+void print_lexems(const Lexeme *lexems);
+
 int main(void) {
   const i8 *str =
-      " let x = if 1 then 2 + 4 else 10 let yz = 5 123 + 2 * 3; 123";
+      "type x, z = y, g let x = if 1 then 2 + 4 else 10 let yz = 5, "
+      "123 + 2 * 3; 123, 123, 53";
   Lexeme *lexems = lex(str, strlen(str));
 
   if ((usize)lexems & 1) {
@@ -22,15 +25,36 @@ int main(void) {
     return 1;
   }
 
+  // print_lexems(lexems);
+
   Stat *stats = parse(str, lexems);
 
   for (u64 i = 0; i < vec_len(stats); i++) {
     switch (stats[i].type) {
+    case TypeLineStat:
+      printf("Type(");
+      print_expr(stats[i].any[0]);
+      printf(",");
+      print_expr(stats[i].any[1]);
+      goto FINISH;
+    case TypeStat:
+      printf("Type(%.*s,\n  ",
+             (int)(stats[i].let.name.right - stats[i].let.name.left),
+             str + stats[i].let.name.left);
+      print_expr(stats[i].let.expr);
+      goto FINISH;
+    case LetLineStat:
+      printf("Let(");
+      print_expr(stats[i].any[0]);
+      printf(",");
+      print_expr(stats[i].any[1]);
+      goto FINISH;
     case LetStat:
       printf("Let(%.*s,\n  ",
              (int)(stats[i].let.name.right - stats[i].let.name.left),
              str + stats[i].let.name.left);
       print_expr(stats[i].let.expr);
+    FINISH:
       printf(")\n");
       break;
     case TopExprStat:

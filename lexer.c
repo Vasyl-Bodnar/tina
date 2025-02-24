@@ -141,6 +141,19 @@ void error_check(Lexer *lexer, enum lex (*fn)(Lexer *)) {
   }
 }
 
+bool special(Lexer *lexer) {
+  return lexer->input[lexer->pt] == ',' || lexer->input[lexer->pt] == '.' ||
+         lexer->input[lexer->pt] == '#' || lexer->input[lexer->pt] == '(' ||
+         lexer->input[lexer->pt] == ')' || lexer->input[lexer->pt] == '{' ||
+         lexer->input[lexer->pt] == '}' || lexer->input[lexer->pt] == '[' ||
+         lexer->input[lexer->pt] == ']' || lexer->input[lexer->pt] == '=' ||
+         lexer->input[lexer->pt] == '>' || lexer->input[lexer->pt] == '<' ||
+         lexer->input[lexer->pt] == ':' || lexer->input[lexer->pt] == ';' ||
+         lexer->input[lexer->pt] == '@' || lexer->input[lexer->pt] == '-' ||
+         lexer->input[lexer->pt] == '*' || lexer->input[lexer->pt] == '+' ||
+         lexer->input[lexer->pt] == '/';
+}
+
 inline void adv(Lexer *lexer) {
   lexer->pt++;
   lexer->col++;
@@ -233,7 +246,8 @@ enum lex num_or_float(Lexer *lexer) {
 
 void str_til_spc(Lexer *lexer, const enum lex type) {
   u64 mark = lexer->pt;
-  while (lexer->pt < lexer->len && !isspace(lexer->input[lexer->pt])) {
+  while (lexer->pt < lexer->len && !isspace(lexer->input[lexer->pt]) &&
+         !special(lexer)) {
     adv(lexer);
   }
   Lexeme *lexm = vec_push_get(&lexer->lexems);
@@ -383,6 +397,9 @@ void all(Lexer *lexer) {
       break;
     case '.':
       ch(lexer, DotTok);
+      break;
+    case ',':
+      ch(lexer, CommaTok);
       break;
     case ';':
       ch(lexer, SemiColonTok);
