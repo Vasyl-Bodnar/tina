@@ -7,9 +7,11 @@
 void print_lexems(const Lexeme *lexems);
 
 int main(void) {
-  const i8 *str =
-      "type x, z = y, g let x = if 1 then 2 + 4 - 2 else 10 let yz = 5, "
-      "123 + 2 * 3; 123, 123, 53";
+  const i8 *str = "type x, z = y, g "
+                  "let x = if 1 then 2 + 4 - 2 else 10 "
+                  "let yz = 5, 123 + 2 * 3; "
+                  "fun hello x { x+x; 23 } "
+                  "{ (123, 123) + (53, 2); (123, 123) + (53, 2) }";
   Lexeme *lexems = lex(str, strlen(str));
 
   if ((usize)lexems & 1) {
@@ -31,30 +33,41 @@ int main(void) {
 
   for (u64 i = 0; i < vec_len(stats); i++) {
     switch (stats[i].type) {
+    case FunStat:
+      printf("Fun(%.*s,\n  ",
+             (int)(stats[i].fun.name.right - stats[i].fun.name.left),
+             str + stats[i].fun.name.left);
+      print_expr(stats[i].fun.ids);
+      printf(",");
+      print_expr(stats[i].fun.expr);
+      printf(")\n");
+      break;
     case TypeLineStat:
-      printf("Type(");
+      printf("TypeL(");
       print_expr(stats[i].any[0]);
       printf(",");
       print_expr(stats[i].any[1]);
-      goto FINISH;
+      printf(")\n");
+      break;
     case TypeStat:
       printf("Type(%.*s,\n  ",
              (int)(stats[i].let.name.right - stats[i].let.name.left),
              str + stats[i].let.name.left);
       print_expr(stats[i].let.expr);
-      goto FINISH;
+      printf(")\n");
+      break;
     case LetLineStat:
-      printf("Let(");
+      printf("LetL(");
       print_expr(stats[i].any[0]);
       printf(",");
       print_expr(stats[i].any[1]);
-      goto FINISH;
+      printf(")\n");
+      break;
     case LetStat:
       printf("Let(%.*s,\n  ",
              (int)(stats[i].let.name.right - stats[i].let.name.left),
              str + stats[i].let.name.left);
       print_expr(stats[i].let.expr);
-    FINISH:
       printf(")\n");
       break;
     case TopExprStat:

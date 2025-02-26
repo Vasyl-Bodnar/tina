@@ -104,6 +104,16 @@ void print_expr(Expr expr) {
     }
     printf(")");
     break;
+  case BlockExpr:
+    printf("Block(");
+    for (u64 i = 0; i < vec_len(expr.exprs); i++) {
+      print_expr(expr.exprs[i]);
+      if (i < vec_len(expr.exprs) - 1) {
+        printf(",");
+      }
+    }
+    printf(")");
+    break;
   case NoExpr:
     break;
   }
@@ -114,6 +124,10 @@ inline void skip(Parser *parser) { parser->pt++; }
 inline Lexeme prev(Parser *parser) { return parser->lexems[parser->pt - 1]; }
 inline Lexeme curr(Parser *parser) { return parser->lexems[parser->pt]; }
 inline Lexeme next(Parser *parser) { return parser->lexems[parser->pt + 1]; }
+
+inline bool is(Parser *parser, const enum lex type) {
+  return curr(parser).type == type;
+}
 
 inline bool match(Parser *parser, const enum lex type) {
   if (curr(parser).type == type) {
@@ -132,14 +146,14 @@ Expr id(Parser *parser) {
   }
 }
 
-Expr line(Parser *parser);
+Expr block(Parser *parser);
 
 Expr if_expr(Parser *parser) {
-  Expr t = line(parser);
+  Expr t = block(parser);
   if (match(parser, ThenTok)) {
-    Expr e1 = line(parser);
+    Expr e1 = block(parser);
     if (match(parser, ElseTok)) {
-      Expr e2 = line(parser);
+      Expr e2 = block(parser);
       Expr *vec = vec_create();
       vec_push(&vec, t);
       vec_push(&vec, e1);
@@ -169,6 +183,12 @@ Expr unit(Parser *parser) {
     return (Expr){.type = StrExpr, .str = prev(parser).str};
   case IdTok:
     return (Expr){.type = IdExpr, .str = prev(parser).str};
+  case LParenTok: {
+    Expr e = block(parser);
+    if (match(parser, RParenTok)) {
+      return e;
+    }
+  }
   case IfTok:
     return if_expr(parser);
   default:
@@ -259,11 +279,23 @@ Expr line_id(Parser *parser) {
   return i1;
 }
 
+Expr block(Parser *parser) {
+  if (match(parser, LBrackTok)) {
+    Expr *vec = vec_create();
+    while (!match(parser, RBrackTok)) {
+      match(parser, SemiColonTok);
+      vec_push(&vec, line(parser));
+    }
+    return (Expr){.type = BlockExpr, .exprs = vec};
+  }
+  return line(parser);
+}
+
 void type(Parser *parser) {
   skip(parser);
   Expr i = line_id(parser);
   if (match(parser, EqTok)) {
-    Expr e = line(parser);
+    Expr e = block(parser);
     Stat *stat = vec_push_get(&parser->ast);
     if (i.type == IdExpr) {
       stat->type = TypeStat;
@@ -284,7 +316,7 @@ void let(Parser *parser) {
   skip(parser);
   Expr i = line_id(parser);
   if (match(parser, EqTok)) {
-    Expr e = line(parser);
+    Expr e = block(parser);
     Stat *stat = vec_push_get(&parser->ast);
     if (i.type == IdExpr) {
       stat->type = LetStat;
@@ -301,8 +333,18 @@ void let(Parser *parser) {
   }
 }
 
+void fun(Parser *parser) {
+  skip(parser);
+  Expr i = id(parser);
+  Expr in = line_id(parser);
+  Expr e = block(parser);
+  Stat *stat = vec_push_get(&parser->ast);
+  stat->type = FunStat;
+  stat->fun = (FunS){.name = i.str, .ids = in, .expr = e};
+}
+
 void top(Parser *parser) {
-  Expr e = line(parser);
+  Expr e = block(parser);
   Stat *stat = vec_push_get(&parser->ast);
   stat->type = TopExprStat;
   stat->top = (TopS){.expr = e};
@@ -320,6 +362,10 @@ void stats(Parser *parser) {
       // ERR
       skip(parser);
       return;
+
+    case FunTok:
+      fun(parser);
+      break;
 
     case LetTok:
       let(parser);

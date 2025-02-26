@@ -19,8 +19,8 @@ enum texpr {
   NoExpr,
   LineExpr,
   LineIdExpr,
+  BlockExpr,
   // ApplyExpr,
-  // BlockExpr,
 };
 
 enum tstat {
@@ -29,19 +29,19 @@ enum tstat {
   LetStat,
   LetLineStat,
   TopExprStat,
-  // FunStat,
+  FunStat,
   // EnumStat,
 };
 
-typedef struct bin_op {
-  struct expr *left;
-  struct expr *right;
-} BinaryOp;
+// typedef struct bin_op {
+//   struct expr *left;
+//   struct expr *right;
+// } BinaryOp;
 
 typedef struct expr {
   union {
     RefStr str;
-    BinaryOp bin_op;
+    // BinaryOp bin_op;
     struct expr *exprs;
     i8 ch;
     u64 num;
@@ -49,6 +49,12 @@ typedef struct expr {
   };
   enum texpr type;
 } Expr;
+
+typedef struct fun_s {
+  RefStr name;
+  Expr ids;
+  Expr expr;
+} FunS;
 
 typedef struct let_s {
   RefStr name;
@@ -61,6 +67,7 @@ typedef struct top_s {
 
 typedef struct stat {
   union {
+    FunS fun;
     LetS let;
     TopS top;
     Expr *any;
