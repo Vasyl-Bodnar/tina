@@ -196,13 +196,13 @@ Expr factor(Parser *parser) { return unary(parser); }
 Expr term(Parser *parser) {
   Expr e1 = factor(parser);
   if (match(parser, StarTok)) {
-    Expr e2 = factor(parser);
+    Expr e2 = term(parser);
     Expr *vec = vec_create();
     vec_push(&vec, e1);
     vec_push(&vec, e2);
     return (Expr){.type = MultExpr, .exprs = vec};
   } else if (match(parser, DivTok)) {
-    Expr e2 = factor(parser);
+    Expr e2 = term(parser);
     Expr *vec = vec_create();
     vec_push(&vec, e1);
     vec_push(&vec, e2);
@@ -214,13 +214,13 @@ Expr term(Parser *parser) {
 Expr expr(Parser *parser) {
   Expr e1 = term(parser);
   if (match(parser, PlusTok)) {
-    Expr e2 = term(parser);
+    Expr e2 = expr(parser);
     Expr *vec = vec_create();
     vec_push(&vec, e1);
     vec_push(&vec, e2);
     return (Expr){.type = AddExpr, .exprs = vec};
   } else if (match(parser, MinusTok)) {
-    Expr e2 = term(parser);
+    Expr e2 = expr(parser);
     Expr *vec = vec_create();
     vec_push(&vec, e1);
     vec_push(&vec, e2);

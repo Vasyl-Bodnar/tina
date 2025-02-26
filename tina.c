@@ -8,7 +8,7 @@ void print_lexems(const Lexeme *lexems);
 
 int main(void) {
   const i8 *str =
-      "type x, z = y, g let x = if 1 then 2 + 4 else 10 let yz = 5, "
+      "type x, z = y, g let x = if 1 then 2 + 4 - 2 else 10 let yz = 5, "
       "123 + 2 * 3; 123, 123, 53";
   Lexeme *lexems = lex(str, strlen(str));
 
